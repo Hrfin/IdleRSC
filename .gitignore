@@ -30,7 +30,7 @@ classes/
 build/
 *.jar
 *.zip
-src/main/resources/cache
+src/main/resources/cach
 public/
 
 # User chosen cache
