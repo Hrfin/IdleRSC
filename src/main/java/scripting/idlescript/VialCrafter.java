@@ -96,8 +96,10 @@ public class VialCrafter extends IdleScript {
       while (controller.getInventoryItemCount(1245) > 0) {
         controller.dropItem(
             controller.getInventoryItemSlotIndex(1245), controller.getInventoryItemCount(1245));
-        controller.sleep(640);
+        controller.sleep(1280);
       }
+      pickupBuckets();
+      pickupSandBuckets();
       // Pick up seaweed spawns if on northern side of the island
       if (controller.currentY() < 550 && controller.getInventoryItemCount() < 30) {
         pickupSeaweed();
@@ -144,6 +146,34 @@ public class VialCrafter extends IdleScript {
       int[] groundSeaweed = controller.getNearestItemById(622);
       if (groundSeaweed != null) {
         controller.pickupItem(groundSeaweed[0], groundSeaweed[1], 622, true, false);
+        while (controller.isCurrentlyWalking()) {
+          controller.sleep(640);
+        }
+        controller.sleep(640);
+      }
+    }
+  }
+
+  public void pickupBuckets() {
+    System.out.println("Picking up Buckets");
+    for (int i = 0; i < 12; i++) {
+      int[] groundBuckets = controller.getNearestItemById(21);
+      if (groundBuckets != null) {
+        controller.pickupItem(groundBuckets[0], groundBuckets[1], 622, true, false);
+        while (controller.isCurrentlyWalking()) {
+          controller.sleep(640);
+        }
+        controller.sleep(640);
+      }
+    }
+  }
+
+  public void pickupSandBuckets() {
+    System.out.println("Picking up SandBuckets");
+    for (int i = 0; i < 12; i++) {
+      int[] groundSandBuckets = controller.getNearestItemById(625);
+      if (groundSandBuckets != null) {
+        controller.pickupItem(groundSandBuckets[0], groundSandBuckets[1], 622, true, false);
         while (controller.isCurrentlyWalking()) {
           controller.sleep(640);
         }
@@ -246,30 +276,32 @@ public class VialCrafter extends IdleScript {
 
   public void dropExtra() {
     // drop extra materials (just to start fresh)
-    // seaweed
-    while (controller.getInventoryItemCount(622) > 0 && controller.isRunning()) {
-      controller.dropItem(
-          controller.getInventoryItemSlotIndex(622), controller.getInventoryItemCount(622));
-      controller.sleep(640);
-    }
+    //    // seaweed
+    //    while (controller.getInventoryItemCount(622) > 0 && controller.isRunning()) {
+    //      controller.dropItem(
+    //          controller.getInventoryItemSlotIndex(622), controller.getInventoryItemCount(622));
+    //      controller.sleep(640);
+    //    }
     // edible seaweed
     while (controller.getInventoryItemCount(1245) > 0 && controller.isRunning()) {
       controller.dropItem(
           controller.getInventoryItemSlotIndex(1245), controller.getInventoryItemCount(1245));
-      controller.sleep(640);
+      controller.sleep(1280);
     }
-    // soda ash
-    while (controller.getInventoryItemCount(624) > 0 && controller.isRunning()) {
-      controller.dropItem(
-          controller.getInventoryItemSlotIndex(624), controller.getInventoryItemCount(624));
-      controller.sleep(640);
-    }
-    // molten glass
-    while (controller.getInventoryItemCount(623) > 0 && controller.isRunning()) {
-      controller.dropItem(
-          controller.getInventoryItemSlotIndex(623), controller.getInventoryItemCount(623));
-      controller.sleep(640);
-    }
+    //    // soda ash
+    //    while (controller.getInventoryItemCount(624) > 0 && controller.isRunning()) {
+    //      controller.dropItem(
+    //          controller.getInventoryItemSlotIndex(624), controller.getInventoryItemCount(624));
+    //      controller.sleep(640);
+    //    }
+    //    // molten glass
+    //    while (controller.getInventoryItemCount(623) > 0 && controller.isRunning()) {
+    //      controller.dropItem(
+    //          controller.getInventoryItemSlotIndex(623), controller.getInventoryItemCount(623));
+    //      controller.sleep(640);
+    //    }
+    //    pickupBuckets();
+    //    pickupSandBuckets();
   }
 
   public void quit(int i) {
