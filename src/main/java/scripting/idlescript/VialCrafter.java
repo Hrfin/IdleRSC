@@ -94,9 +94,12 @@ public class VialCrafter extends IdleScript {
     if (!controller.isBatching() && controller.isRunning()) {
       // Drop Edible Seaweed
       while (controller.getInventoryItemCount(1245) > 0) {
-        controller.dropItem(
-            controller.getInventoryItemSlotIndex(1245), controller.getInventoryItemCount(1245));
-        controller.sleep(1280);
+    	  if(!controller.isBatching()) {
+     		 controller.dropItem(controller.getInventoryItemSlotIndex(1245));
+     	     controller.sleep(1500);
+     	     } else {
+     	    	 controller.sleep(640);
+     		}
       }
       pickupBuckets();
       pickupSandBuckets();
@@ -284,9 +287,12 @@ public class VialCrafter extends IdleScript {
     //    }
     // edible seaweed
     while (controller.getInventoryItemCount(1245) > 0 && controller.isRunning()) {
-      controller.dropItem(
-          controller.getInventoryItemSlotIndex(1245), controller.getInventoryItemCount(1245));
-      controller.sleep(1280);
+    	if(!controller.isBatching()) {
+   		 controller.dropItem(controller.getInventoryItemSlotIndex(1245));
+   	     controller.sleep(1500);
+	   	} else {
+	   		controller.sleep(640);
+	   	}
     }
     //    // soda ash
     //    while (controller.getInventoryItemCount(624) > 0 && controller.isRunning()) {
