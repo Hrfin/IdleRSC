@@ -241,6 +241,8 @@ public class DamRc extends IdleScript {
             }
           }
         }
+        //drastically reduces cpu load when mining essence
+        controller.sleep(640);
       }
       if (!mineEss) {
 
@@ -275,7 +277,8 @@ public class DamRc extends IdleScript {
         }
       }
     }
-    c.sleep(640);
+    //reduces time standing around
+    c.sleep(100);
   }
 
   public void teleport() {
@@ -311,7 +314,8 @@ public class DamRc extends IdleScript {
       runesInBank = c.getBankItemCount(runeId);
       if (crown && !mineEss && !c.isItemIdEquipped(1511) && c.getBankItemCount(1511) > 0) {
         c.withdrawItem(1511, 1);
-        c.sleep(640);
+        //reduces time standing around
+        c.sleep(100);
       }
       if (c.getInventoryItemCount(runeId) > 0) {
         status = "Deposit runes";
@@ -348,7 +352,8 @@ public class DamRc extends IdleScript {
       c.displayMessage("@cya@" + "Walk to bank");
     }
     c.walkPath(toBank);
-    c.sleep(640);
+    //reduces time standing around
+    c.sleep(100);
   }
 
   public void walkToSpot() {
@@ -357,7 +362,8 @@ public class DamRc extends IdleScript {
       c.displayMessage("@cya@" + "Walk to tele spot");
     }
     c.walkPath(toSpot);
-    c.sleep(640);
+    //reduces time standing around
+    c.sleep(100);
   }
 
   static class guiObject {
@@ -397,8 +403,8 @@ public class DamRc extends IdleScript {
     portalId = 1214;
     runeId = 33;
     alterZ = 25;
-    toBank = new int[] {303, 588, 296, 584, 290, 578, 284, 570};
-    toSpot = new int[] {290, 578, 296, 584, 303, 588, 307, 592};
+    toBank = new int[] {284, 570};
+    toSpot = new int[] {307, 592};
     bankNW = new int[] {286, 564};
     bankSE = new int[] {280, 573};
     spotNW = new int[] {313, 587};
@@ -416,16 +422,8 @@ public class DamRc extends IdleScript {
     portalId = 1215;
     runeId = 35;
     alterZ = 25;
-    toBank =
-        new int[] {
-          299, 445, 304, 455, 309, 465, 312, 474, 313, 484, 310, 492, 304, 499, 302, 510, 313, 516,
-          315, 525, 314, 534, 321, 541, 326, 547, 330, 553
-        };
-    toSpot =
-        new int[] {
-          326, 547, 321, 541, 314, 534, 315, 525, 313, 516, 302, 510, 304, 499, 310, 492, 313, 484,
-          312, 475, 309, 465, 304, 455, 299, 445, 298, 441
-        };
+    toBank = new int[] {309, 465, 313, 484, 304, 499, 313, 516, 314, 534, 330, 553};
+    toSpot = new int[] {314, 534, 313, 516, 304, 499, 313, 484, 309, 465, 298, 441};
     bankNW = new int[] {334, 549};
     bankSE = new int[] {328, 557};
     spotNW = new int[] {302, 435};
