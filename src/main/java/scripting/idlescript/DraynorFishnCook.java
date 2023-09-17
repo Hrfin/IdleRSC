@@ -18,8 +18,21 @@ public class DraynorFishnCook extends IdleScript {
 
   int initialX, initialY;
 
-  public int start(String parameters[]) { 
-	controller.setStatus("Checking for Required Items...");
+  public int start(String parameters[]) {
+    // If 1 is entered as a parameter then it'll only fish, no cooking.
+    boolean onlyFishing = false;
+    if (parameters[0] != null) {
+      String[] res = parameters[0].split("[,]", 0);
+      try {
+        if (Integer.parseInt(res[0]) == 1) {
+          onlyFishing = true;
+          System.out.println("Only Fishing.");
+        }
+      } catch (NumberFormatException e) {
+        System.out.println("put 1 in the parameters for fishing only mode");
+      }
+    }
+    controller.setStatus("Checking for Required Items...");
     initialX = controller.currentX();
     initialY = controller.currentY();
     for (int axe : ids_axe) {
@@ -38,10 +51,10 @@ public class DraynorFishnCook extends IdleScript {
     while (controller.isRunning()) {
       if (controller.getInventoryItemCount() < 30) {
         fish();
-        while (controller.isBatching() && controller.getInventoryItemCount() < 30)
-          controller.sleep(640);
-      } else {
+      } else if (!onlyFishing) {
         cook();
+      } else {
+        fish();
       }
       controller.sleep(1280);
     }
@@ -104,7 +117,7 @@ public class DraynorFishnCook extends IdleScript {
               controller.useItemIdOnObject(fire[0], fire[1], fish);
             }
           }
-          controller.sleep(640);
+          controller.sleep(1280);
           fire = controller.getNearestObjectById(ID_FIRE);
         }
       }
