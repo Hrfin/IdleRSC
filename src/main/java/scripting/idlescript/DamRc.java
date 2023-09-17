@@ -241,7 +241,7 @@ public class DamRc extends IdleScript {
             }
           }
         }
-        //drastically reduces cpu load when mining essence
+        // drastically reduces cpu load when mining essence
         controller.sleep(640);
       }
       if (!mineEss) {
@@ -277,7 +277,7 @@ public class DamRc extends IdleScript {
         }
       }
     }
-    //reduces time standing around
+    // reduces time standing around
     c.sleep(100);
   }
 
@@ -314,7 +314,7 @@ public class DamRc extends IdleScript {
       runesInBank = c.getBankItemCount(runeId);
       if (crown && !mineEss && !c.isItemIdEquipped(1511) && c.getBankItemCount(1511) > 0) {
         c.withdrawItem(1511, 1);
-        //reduces time standing around
+        // reduces time standing around
         c.sleep(100);
       }
       if (c.getInventoryItemCount(runeId) > 0) {
@@ -352,7 +352,7 @@ public class DamRc extends IdleScript {
       c.displayMessage("@cya@" + "Walk to bank");
     }
     c.walkPath(toBank);
-    //reduces time standing around
+    // reduces time standing around
     c.sleep(100);
   }
 
@@ -362,7 +362,7 @@ public class DamRc extends IdleScript {
       c.displayMessage("@cya@" + "Walk to tele spot");
     }
     c.walkPath(toSpot);
-    //reduces time standing around
+    // reduces time standing around
     c.sleep(100);
   }
 
