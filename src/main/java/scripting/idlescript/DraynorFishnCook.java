@@ -18,7 +18,8 @@ public class DraynorFishnCook extends IdleScript {
 
   int initialX, initialY;
 
-  public int start(String parameters[]) {
+  public int start(String parameters[]) { 
+	controller.setStatus("Checking for Required Items...");
     initialX = controller.currentX();
     initialY = controller.currentY();
     for (int axe : ids_axe) {
@@ -42,7 +43,7 @@ public class DraynorFishnCook extends IdleScript {
       } else {
         cook();
       }
-      controller.sleep(640);
+      controller.sleep(1280);
     }
     return 1;
   }
