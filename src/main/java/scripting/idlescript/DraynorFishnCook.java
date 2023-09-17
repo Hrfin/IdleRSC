@@ -1,5 +1,8 @@
 package scripting.idlescript;
 
+import bot.Main;
+import controller.Controller;
+
 public class DraynorFishnCook extends IdleScript {
 
   private static final int ID_FISHING_SPOT = 193;
@@ -13,10 +16,15 @@ public class DraynorFishnCook extends IdleScript {
   private static final int[] ids_cooked = {352, 350};
   private static final int[] ids_axe = {12, 87, 88, 203, 204, 405};
 
-  Boolean makeFire = false;
-  Boolean hasAxe = false;
+  private static final Controller c = Main.getController();
 
-  int initialX, initialY;
+  private static long startTime = System.currentTimeMillis();
+  private static long next_attempt = System.currentTimeMillis() + 5000L;
+  private static long nineMinutesInMillis = 540000L;
+  private static boolean makeFire = false;
+  private static boolean hasAxe = false;
+
+  private static int initialX, initialY;
 
   public int start(String parameters[]) {
     // If 1 is entered as a parameter then it'll only fish, no cooking.
@@ -32,117 +40,136 @@ public class DraynorFishnCook extends IdleScript {
         System.out.println("put 1 in the parameters for fishing only mode");
       }
     }
-    controller.setStatus("Checking for Required Items...");
-    initialX = controller.currentX();
-    initialY = controller.currentY();
+    c.setStatus("Checking for Required Items...");
+
+    initialX = c.currentX();
+    initialY = c.currentY();
     for (int axe : ids_axe) {
-      if (controller.isItemInInventory(axe)) {
+      if (c.isItemInInventory(axe)) {
         hasAxe = true;
       }
     }
     if (!hasAxe) {
-      controller.setStatus("No Axe!");
-      controller.stop();
+      c.setStatus("No Axe!");
+      c.stop();
     }
-    if (!controller.isItemInInventory(ID_NET)) {
-      controller.setStatus("No Net!");
-      controller.stop();
+    if (!c.isItemInInventory(ID_NET)) {
+      c.setStatus("No Net!");
+      c.stop();
     }
-    while (controller.isRunning()) {
-      if (controller.getInventoryItemCount() < 30) {
+    while (c.isRunning()) {
+      if (c.getInventoryItemCount() < 30) {
         fish();
       } else if (!onlyFishing) {
         cook();
       } else {
         fish();
+        checkAutowalk();
       }
-      controller.sleep(1280);
+      c.sleep(1280);
     }
     return 1;
   }
 
-  public void fish() {
-    if (!controller.isBatching()) {
-      controller.setStatus("Fishing...");
-      int[] coords = controller.getNearestObjectById(ID_FISHING_SPOT);
-      controller.walkTo(coords[0], coords[1], 1, false);
-      controller.atObject(coords[0], coords[1]);
+  public static void fish() {
+    if (!c.isBatching()) {
+      c.setStatus("Fishing...");
+      int[] coords = c.getNearestObjectById(ID_FISHING_SPOT);
+      c.walkTo(coords[0], coords[1], 1, false);
+      c.atObject(coords[0], coords[1]);
     }
   }
 
-  public void cook() {
-    while (getRawCount() > 0 && controller.isRunning()) {
-      int[] fire = controller.getNearestObjectById(ID_FIRE);
+  public static void cook() {
+    while (getRawCount() > 0 && c.isRunning()) {
+      int[] fire = c.getNearestObjectById(ID_FIRE);
       // is there a fire?
       makeFire = (fire == null) ? true : false;
       if (makeFire) {
         // if there's no fire
-        controller.setStatus("Making Fire..");
-        int[] tree = controller.getNearestObjectById(ID_TREE);
-        int[] log = controller.getNearestItemById(ID_LOGS);
+        c.setStatus("Making Fire..");
+        int[] tree = c.getNearestObjectById(ID_TREE);
+        int[] log = c.getNearestItemById(ID_LOGS);
         // Logs will automatically drop on the ground since full inventory
         // If another bot hasn't lit a fire, or there's not a log on the ground
-        while (log == null && fire == null && controller.isRunning()) {
+        while (log == null && fire == null && c.isRunning()) {
           // if not already cutting a tree, cut tree.
-          if (!controller.isBatching()) {
-            tree = controller.getNearestObjectById(ID_TREE);
-            if (tree != null) controller.walkTo(tree[0], tree[1], 1, false);
-            controller.atObject(tree[0], tree[1]);
+          if (!c.isBatching()) {
+            tree = c.getNearestObjectById(ID_TREE);
+            if (tree != null) c.walkTo(tree[0], tree[1], 1, false);
+            c.atObject(tree[0], tree[1]);
           }
-          controller.sleep(500);
-          log = controller.getNearestItemById(ID_LOGS);
-          fire = controller.getNearestObjectById(ID_FIRE);
+          c.sleep(500);
+          log = c.getNearestItemById(ID_LOGS);
+          fire = c.getNearestObjectById(ID_FIRE);
         }
-        if (log != null) controller.walkTo(log[0], log[1]);
-        while (fire == null && log != null && controller.isRunning()) {
-          controller.setStatus("Searching for Log..");
-          if (!controller.isBatching()) {
-            controller.setStatus("Trying to Light..");
-            int index = controller.getInventoryItemSlotIndex(ID_TINDERBOX);
-            controller.useItemOnGroundItem(log[0], log[1], ID_TINDERBOX, ID_LOGS);
-            controller.sleep(1280);
+        if (log != null) c.walkTo(log[0], log[1]);
+        while (fire == null && log != null && c.isRunning()) {
+          c.setStatus("Searching for Log..");
+          if (!c.isBatching()) {
+            c.setStatus("Trying to Light..");
+            int index = c.getInventoryItemSlotIndex(ID_TINDERBOX);
+            c.useItemOnGroundItem(log[0], log[1], ID_TINDERBOX, ID_LOGS);
+            c.sleep(1280);
           }
-          controller.sleep(500);
-          log = controller.getNearestItemById(ID_LOGS);
-          fire = controller.getNearestObjectById(ID_FIRE);
+          c.sleep(500);
+          log = c.getNearestItemById(ID_LOGS);
+          fire = c.getNearestObjectById(ID_FIRE);
         }
       } else {
         // If there's a fire already
-        controller.setStatus("Cooking...");
-        if (fire != null) controller.walkTo(fire[0], fire[1], 1, false);
-        while (fire != null && getRawCount() > 0 && controller.isRunning()) {
-          controller.setStatus("Actually Looping cook");
+        c.setStatus("Cooking...");
+        if (fire != null) c.walkTo(fire[0], fire[1], 1, false);
+        while (fire != null && getRawCount() > 0 && c.isRunning()) {
+          c.setStatus("Actually Looping cook");
           for (int fish : ids_raw) {
-            if (controller.isItemInInventory(fish) && !controller.isBatching()) {
-              controller.useItemIdOnObject(fire[0], fire[1], fish);
+            if (c.isItemInInventory(fish) && !c.isBatching()) {
+              c.useItemIdOnObject(fire[0], fire[1], fish);
             }
           }
-          controller.sleep(1280);
-          fire = controller.getNearestObjectById(ID_FIRE);
+          c.sleep(1280);
+          fire = c.getNearestObjectById(ID_FIRE);
         }
       }
     }
-    controller.setStatus("Dropping..");
+    c.setStatus("Dropping..");
     int index = 0;
-    while (controller.isItemInInventory(ID_BURNED) && controller.isRunning()) {
-      index = controller.getInventoryItemSlotIndex(ID_BURNED);
-      controller.dropItem(index);
-      controller.sleep(640);
+    while (c.isItemInInventory(ID_BURNED) && c.isRunning()) {
+      index = c.getInventoryItemSlotIndex(ID_BURNED);
+      c.dropItem(index);
+      c.sleep(640);
     }
     for (int cooked : ids_cooked) {
-      while (controller.isItemInInventory(cooked) && controller.isRunning()) {
-        index = controller.getInventoryItemSlotIndex(cooked);
-        controller.dropItem(index);
-        controller.sleep(640);
+      while (c.isItemInInventory(cooked) && c.isRunning()) {
+        index = c.getInventoryItemSlotIndex(cooked);
+        c.dropItem(index);
+        c.sleep(640);
       }
     }
-    controller.walkTo(initialX, initialY);
+    c.walkTo(initialX, initialY);
   }
 
-  public int getRawCount() {
+  private static void checkAutowalk() {
+    if (System.currentTimeMillis() > next_attempt) {
+      c.log("@red@Walking to Avoid Logging!");
+      int x = c.currentX();
+      int y = c.currentY();
+
+      if (c.isReachable(x + 1, y, false)) c.walkTo(x + 1, y, 0, true);
+      else if (c.isReachable(x - 1, y, false)) c.walkTo(x - 1, y, 0, true);
+      else if (c.isReachable(x, y + 1, false)) c.walkTo(x, y + 1, 0, true);
+      else if (c.isReachable(x, y - 1, false)) c.walkTo(x, y - 1, 0, true);
+      c.sleep(1280);
+      next_attempt = System.currentTimeMillis() + nineMinutesInMillis;
+      long nextAttemptInSeconds = (next_attempt - System.currentTimeMillis()) / 1000L;
+      c.log("Done Walking to not Log, Next attempt in " + nextAttemptInSeconds + " seconds!");
+    }
+  }
+
+  public static int getRawCount() {
     int count = 0;
     for (int id : ids_raw) {
-      count += controller.getInventoryItemCount(id);
+      count += c.getInventoryItemCount(id);
     }
     return count;
   }
