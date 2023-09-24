@@ -20,6 +20,13 @@ public class PowerFletcha extends IdleScript {
   FletchObject target = null;
   int fightMode = 0;
   int eatingHealth = 0;
+  int originalY;
+  int originalX;
+  long startTime;
+  int startXpFletch;
+  int startXpWc;
+  double expHrFletch;
+  double expHrWc;
 
   final int[] bowIds = {276, 277, 658, 659, 660, 661, 662, 663, 664, 665, 666, 667};
 
@@ -55,14 +62,20 @@ public class PowerFletcha extends IdleScript {
           add(new FletchObject("Arrow Shafts", 1, 14, 0));
           add(new FletchObject("Shortbow", 1, 14, 1));
           add(new FletchObject("Longbow", 1, 14, 2));
+          // shafts work with the coleslaw fix. Would just crash the script in uranium
+          add(new FletchObject("Oak Arrow Shafts", 306, 632, -1));
           add(new FletchObject("Oak Shortbow", 306, 632, 0));
           add(new FletchObject("Oak Longbow", 306, 632, 1));
+          add(new FletchObject("Willow Arrow Shafts", 307, 633, -1));
           add(new FletchObject("Willow Shortbow", 307, 633, 0));
           add(new FletchObject("Willow Longbow", 307, 633, 1));
+          add(new FletchObject("Maple Arrow Shafts", 308, 634, -1));
           add(new FletchObject("Maple Shortbow", 308, 634, 0));
           add(new FletchObject("Maple Longbow", 308, 634, 1));
+          add(new FletchObject("Yew Arrow Shafts", 309, 635, -1));
           add(new FletchObject("Yew Shortbow", 309, 635, 0));
           add(new FletchObject("Yew Longbow", 309, 635, 1));
+          add(new FletchObject("Magic Arrow Shafts", 310, 636, -1));
           add(new FletchObject("Magic Shortbow", 310, 636, 0));
           add(new FletchObject("Magic Longbow", 310, 636, 1));
         }
@@ -89,15 +102,8 @@ public class PowerFletcha extends IdleScript {
 
       controller.sleepHandler(98, true);
 
-      for (int id : bowIds) {
-        if (controller.getInventoryItemCount(id) > 0) {
-          controller.setStatus("@yel@Dropping bows...");
-          controller.dropItem(controller.getInventoryItemSlotIndex(id));
-          controller.sleep(250);
-        }
-      }
-
-      if (controller.getInventoryItemCount(target.logId) > 0) {
+      if (controller.getInventoryItemCount(target.logId) > 0
+          && controller.getInventoryItemCount() >= 30) {
         controller.setStatus("@yel@Fletching...");
         controller.useItemOnItemBySlot(
             controller.getInventoryItemSlotIndex(13),
@@ -110,7 +116,16 @@ public class PowerFletcha extends IdleScript {
 
         controller.sleep(618);
 
-        while (controller.isBatching()) controller.sleep(10);
+        while (controller.isBatching()) controller.sleep(100);
+      }
+
+      // Moved down so it drops bows immediately after fletching them instead of hitting a tree
+      for (int id : bowIds) {
+        if (controller.getInventoryItemCount(id) > 0) {
+          controller.setStatus("@yel@Dropping bows...");
+          controller.dropItem(controller.getInventoryItemSlotIndex(id));
+          controller.sleep(250);
+        }
       }
 
       int[] objCoords = controller.getNearestObjectById(target.treeId);
@@ -118,10 +133,21 @@ public class PowerFletcha extends IdleScript {
         controller.setStatus("@yel@Cutting wood..");
         controller.atObject(objCoords[0], objCoords[1]);
         controller.sleep(618);
-        while (controller.isBatching()) controller.sleep(10);
+        while (controller.isBatching()) {
+          // Prevent the bot from cutting wood on a full inventory, stops batching
+          if (controller.getInventoryItemCount() >= 30) {
+            originalY = controller.currentY();
+            originalX = controller.currentX();
+            controller.walkTo(originalX, originalY);
+            controller.sleep(200);
+          } else {
+            controller.sleep(100);
+          }
+        }
       } else {
         controller.setStatus("@yel@Waiting for tree spawn..");
       }
+      controller.sleep(200);
     }
   }
 
@@ -173,11 +199,15 @@ public class PowerFletcha extends IdleScript {
         float timeRan = currentTimeInSeconds - startTimestamp;
         float scale = (60 * 60) / timeRan;
         fletchedPerHr = (int) (itemsFletched * scale);
+        int gainedXpFletch = controller.getStatXp(9) - startXpFletch;
+        int gainedXpWc = controller.getStatXp(8) - startXpWc;
+        expHrFletch = gainedXpFletch * scale;
+        expHrWc = gainedXpWc * scale;
       } catch (Exception e) {
         // divide by zero
       }
 
-      controller.drawBoxAlpha(7, 7, 160, 21 + 14, 0x228B22, 128);
+      controller.drawBoxAlpha(7, 7, 160, 21 + 14 + 14 + 14, 0x228B22, 128);
       controller.drawString("@yel@PowerFletcha @whi@by @yel@Dvorak", 10, 21, 0xFFFFFF, 1);
       controller.drawString(
           "@yel@Items fletched: @whi@"
@@ -187,6 +217,18 @@ public class PowerFletcha extends IdleScript {
               + "@yel@/@whi@hr@yel@)",
           10,
           21 + 14,
+          0xFFFFFF,
+          1);
+      controller.drawString(
+          "@yel@Fletch Xp/hr:@whi@" + String.format("%,.0f", expHrFletch),
+          10,
+          21 + 14 + 14,
+          0xFFFFFF,
+          1);
+      controller.drawString(
+          "@yel@Wc Xp/hr:@whi@" + String.format("%,.0f", expHrWc),
+          10,
+          21 + 14 + 14 + 14,
           0xFFFFFF,
           1);
     }

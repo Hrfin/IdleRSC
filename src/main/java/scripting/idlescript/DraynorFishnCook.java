@@ -155,10 +155,10 @@ public class DraynorFishnCook extends IdleScript {
       int x = c.currentX();
       int y = c.currentY();
 
-      if (c.isReachable(x + 1, y, false)) c.walkTo(x + 1, y, 0, true);
-      else if (c.isReachable(x - 1, y, false)) c.walkTo(x - 1, y, 0, true);
-      else if (c.isReachable(x, y + 1, false)) c.walkTo(x, y + 1, 0, true);
-      else if (c.isReachable(x, y - 1, false)) c.walkTo(x, y - 1, 0, true);
+      if (c.isReachable(x + 1, y, false)) c.walkTo(x + 1, y, 0, false);
+      else if (c.isReachable(x - 1, y, false)) c.walkTo(x - 1, y, 0, false);
+      else if (c.isReachable(x, y + 1, false)) c.walkTo(x, y + 1, 0, false);
+      else if (c.isReachable(x, y - 1, false)) c.walkTo(x, y - 1, 0, false);
       c.sleep(1280);
       next_attempt = System.currentTimeMillis() + nineMinutesInMillis;
       long nextAttemptInSeconds = (next_attempt - System.currentTimeMillis()) / 1000L;
