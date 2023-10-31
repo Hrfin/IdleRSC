@@ -47,7 +47,8 @@ public class AIOFighter extends IdleScript {
   boolean openDoors = false;
   boolean buryBones = true;
   boolean prioritizeBones = false;
-
+  private long next_attempt = -1;
+  private final long nineMinutesInMillis = 540000L;
   boolean maging = true;
   int spellId = 0;
 
@@ -74,7 +75,13 @@ public class AIOFighter extends IdleScript {
   final long startTimestamp = System.currentTimeMillis() / 1000L;
   int bonesBuried = 0;
   int spellsCasted = 0;
-
+  /**
+   * This function is the entry point for the program. It takes an array of parameters and executes
+   * script based on the values of the parameters. <br>
+   * Parameters in this context can be from CLI parsing or in the script options parameters text box
+   *
+   * @param parameters an array of String values representing the parameters passed to the function
+   */
   public int start(String[] parameters) {
     if (!guiSetup) {
       setupGUI();
@@ -84,6 +91,7 @@ public class AIOFighter extends IdleScript {
     if (scriptStarted) {
       guiSetup = false;
       scriptStarted = false;
+      next_attempt = System.currentTimeMillis() + 5000L;
       scriptStart();
     }
 
@@ -115,6 +123,17 @@ public class AIOFighter extends IdleScript {
         // 7th priority: maging
 
         c.sleep(618); // wait 1 tick
+
+        if (c.isCurrentlyWalking()) {
+          next_attempt = System.currentTimeMillis() + nineMinutesInMillis;
+        }
+        if (System.currentTimeMillis() > next_attempt) {
+          c.log("@red@Walking to Avoid Logging!");
+          moveCharacter();
+          next_attempt = System.currentTimeMillis() + nineMinutesInMillis;
+          long nextAttemptInSeconds = (next_attempt - System.currentTimeMillis()) / 1000L;
+          c.log("Done Walking to not Log, Next attempt in " + nextAttemptInSeconds + " seconds!");
+        }
 
         if (!isWithinWander(c.currentX(), c.currentY())) {
           c.setStatus("@red@Out of range! Walking back.");
@@ -299,6 +318,21 @@ public class AIOFighter extends IdleScript {
     }
   }
 
+  private static void moveCharacter() {
+    Controller c = Main.getController();
+    int x = c.currentX();
+    int y = c.currentY();
+
+    if (c.isReachable(x + 1, y, false)) c.walkTo(x + 1, y, 0, false);
+    else if (c.isReachable(x - 1, y, false)) c.walkTo(x - 1, y, 0, false);
+    else if (c.isReachable(x, y + 1, false)) c.walkTo(x, y + 1, 0, false);
+    else if (c.isReachable(x, y - 1, false)) c.walkTo(x, y - 1, 0, false);
+
+    c.sleep(1280);
+
+    c.walkTo(x, y, 0, false);
+  }
+
   public boolean isWithinWander(int x, int y) {
     if (maxWander < 0) return true;
 
@@ -455,6 +489,7 @@ public class AIOFighter extends IdleScript {
   }
 
   public void setupGUI() {
+
     JLabel fightModeLabel = new JLabel("Fight Mode:");
     JComboBox<String> fightModeField =
         new JComboBox<>(new String[] {"Controlled", "Aggressive", "Accurate", "Defensive"});
@@ -466,7 +501,7 @@ public class AIOFighter extends IdleScript {
     JTextField eatAtHpField =
         new JTextField(String.valueOf(c.getCurrentStat(c.getStatId("Hits")) / 2));
     JLabel lootTableLabel = new JLabel("Loot Table: (comma separated)");
-    JTextField lootTableField = new JTextField("381");
+    JTextField lootTableField = new JTextField("-1");
     JCheckBox openDoorsCheckbox =
         new JCheckBox("Open doors/gates? (if On, then set a max wander!)");
     JCheckBox buryBonesCheckbox =
@@ -483,49 +518,6 @@ public class AIOFighter extends IdleScript {
         new JLabel("Switch ID (weapon to switch to if in melee combat while ranging)");
     JTextField switchIdField = new JTextField("81");
     JButton startScriptButton = new JButton("Start");
-
-    startScriptButton.addActionListener(
-        e -> {
-          if (validateFields(
-              npcIdsField,
-              maxWanderField,
-              eatAtHpField,
-              lootTableField,
-              spellNameField,
-              arrowIdField,
-              switchIdField)) {
-            setValuesFromGUI(
-                fightModeField,
-                npcIdsField,
-                maxWanderField,
-                eatAtHpField,
-                lootTableField,
-                openDoorsCheckbox,
-                buryBonesCheckbox,
-                prioritizeBonesCheckbox,
-                magingCheckbox,
-                spellNameField,
-                rangingCheckbox,
-                arrowIdField,
-                switchIdField);
-
-            c.displayMessage("@red@AIOFighter by Dvorak. Let's party like it's 2004!");
-            c.setStatus("@red@Started...");
-
-            scriptFrame.setVisible(false);
-            scriptFrame.dispose();
-            scriptStarted = true;
-          }
-        });
-
-    magingCheckbox.addActionListener(e -> spellNameField.setEnabled(magingCheckbox.isSelected()));
-    buryBonesCheckbox.addActionListener(
-        e -> prioritizeBonesCheckbox.setEnabled(buryBonesCheckbox.isSelected()));
-    rangingCheckbox.addActionListener(
-        e -> {
-          arrowIdField.setEnabled(rangingCheckbox.isSelected());
-          switchIdField.setEnabled(rangingCheckbox.isSelected());
-        });
 
     scriptFrame = new JFrame(c.getPlayerName() + " - options");
 
@@ -570,6 +562,50 @@ public class AIOFighter extends IdleScript {
     scriptFrame.requestFocusInWindow();
 
     c.setStatus("@red@Waiting for start...");
+
+    // action listeners below
+    startScriptButton.addActionListener(
+        e -> {
+          if (validateFields(
+              npcIdsField,
+              maxWanderField,
+              eatAtHpField,
+              lootTableField,
+              spellNameField,
+              arrowIdField,
+              switchIdField)) {
+            setValuesFromGUI(
+                fightModeField,
+                npcIdsField,
+                maxWanderField,
+                eatAtHpField,
+                lootTableField,
+                openDoorsCheckbox,
+                buryBonesCheckbox,
+                prioritizeBonesCheckbox,
+                magingCheckbox,
+                spellNameField,
+                rangingCheckbox,
+                arrowIdField,
+                switchIdField);
+
+            c.displayMessage("@red@AIOFighter by Dvorak. Let's party like it's 2004!");
+            c.setStatus("@red@Started...");
+
+            scriptFrame.setVisible(false);
+            scriptFrame.dispose();
+            scriptStarted = true;
+          }
+        });
+
+    magingCheckbox.addActionListener(e -> spellNameField.setEnabled(magingCheckbox.isSelected()));
+    buryBonesCheckbox.addActionListener(
+        e -> prioritizeBonesCheckbox.setEnabled(buryBonesCheckbox.isSelected()));
+    rangingCheckbox.addActionListener(
+        e -> {
+          arrowIdField.setEnabled(rangingCheckbox.isSelected());
+          switchIdField.setEnabled(rangingCheckbox.isSelected());
+        });
   }
 
   @Override

@@ -24,7 +24,13 @@ public class SmithingVarrock extends IdleScript {
   int totalSmithed = 0;
   final int[] barIds = {169, 170, 171, 173, 174, 408};
   int[] bankerIds = {95, 224, 268, 485, 540, 617};
-
+  /**
+   * This function is the entry point for the program. It takes an array of parameters and executes
+   * script based on the values of the parameters. <br>
+   * Parameters in this context can be from CLI parsing or in the script options parameters text box
+   *
+   * @param parameters an array of String values representing the parameters passed to the function
+   */
   public int start(String[] parameters) {
     if (!guiSetup) {
       setupGUI();
@@ -296,7 +302,7 @@ public class SmithingVarrock extends IdleScript {
       controller.drawString("@red@Smithing Varrock", 10, 21, 0xFFFFFF, 1);
       controller.drawString("@gre@by Searos, fixed by Kaila", 10, 21 + 14, 0xFFFFFF, 1);
       controller.drawString(
-          "@red@Items Smithed: @yel@" + this.totalSmithed, 10, 21 + 14 + 14, 0xFFFFFF, 1);
+          "@red@Bars Smithed: @yel@" + this.totalSmithed, 10, 21 + 14 + 14, 0xFFFFFF, 1);
     }
   }
 }

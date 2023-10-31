@@ -24,7 +24,13 @@ public class BuyFromShop extends K_kailaScript {
   JTextField shopBuyCount = new JTextField("0");
   final JTextField vendorId =
       new JTextField("51,55,87,105,145,168,185,222,391,82,83,88,106,146,169,186,223");
-
+  /**
+   * This function is the entry point for the program. It takes an array of parameters and executes
+   * script based on the values of the parameters. <br>
+   * Parameters in this context can be from CLI parsing or in the script options parameters text box
+   *
+   * @param parameters an array of String values representing the parameters passed to the function
+   */
   public int start(String[] parameters) {
     startX = c.currentX();
     startY = c.currentY();
@@ -91,7 +97,6 @@ public class BuyFromShop extends K_kailaScript {
           startWalking(startX, startY);
         }
         if (c.getNearestNpcByIds(npcId, false) != null && !c.isInShop()) {
-          checkAutowalk();
           if (npcId[0] != 54) {
             c.npcCommand1(c.getNearestNpcByIds(npcId, false).serverIndex);
             c.sleep(640);
@@ -144,10 +149,10 @@ public class BuyFromShop extends K_kailaScript {
       int x = c.currentX();
       int y = c.currentY();
 
-      if (c.isReachable(x + 1, y, true)) c.walkTo(x + 1, y, 0, false);
-      else if (c.isReachable(x - 1, y, true)) c.walkTo(x - 1, y, 0, false);
-      else if (c.isReachable(x, y + 1, true)) c.walkTo(x, y + 1, 0, false);
-      else if (c.isReachable(x, y - 1, true)) c.walkTo(x, y - 1, 0, false);
+      if (c.isReachable(x + 1, y, false)) c.walkTo(x + 1, y, 0, false);
+      else if (c.isReachable(x - 1, y, false)) c.walkTo(x - 1, y, 0, false);
+      else if (c.isReachable(x, y + 1, false)) c.walkTo(x, y + 1, 0, false);
+      else if (c.isReachable(x, y - 1, false)) c.walkTo(x, y - 1, 0, false);
       c.sleep(GAME_TICK);
       next_attempt = System.currentTimeMillis() + nineMinutesInMillis;
       long nextAttemptInSeconds = (next_attempt - System.currentTimeMillis()) / 1000L;
